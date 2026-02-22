@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id            String        @id @default(cuid())
+  name          String
+  type          String        // "INCOME" | "EXPENSE"
+  color         String?
+  transactions  Transaction[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Transaction {
+  id              String         @id @default(cuid())
+  amount          Float
+  date            DateTime
+  description     String
+  type            String         // "INCOME" | "EXPENSE"
+  status          String         // "PLANNED" | "COMPLETED"
+  
+  category        Category?      @relation(fields: [categoryId], references: [id])
+  categoryId      String?
+
+  recurringRule   RecurringRule? @relation(fields: [recurringRuleId], references: [id])
+  recurringRuleId String?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model RecurringRule {
+  id           String        @id @default(cuid())
+  frequency    String        // "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY"
+  interval     Int           @default(1)
+  startDate    DateTime
+  nextRunDate  DateTime?
+  lastRunDate  DateTime?
+  
+  transactions Transaction[]
+  
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model SalaryConfig {
+  id             String   @id @default(cuid())
+  type           String   // "FIXED" | "HOURLY"
+  baseAmount     Float    // Monthly Salary or Hourly Rate
+  advanceDay     Int?     // Day of month for advance payment (e.g., 20)
+  salaryDay      Int?     // Day of month for remaining salary (e.g., 5)
+  advancePercent Float?   // Percentage for advance (e.g., 40%)
+  workingHours   Int?     // Standard working hours per day (for hourly)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
